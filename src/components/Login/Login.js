@@ -1,4 +1,4 @@
-import React, {  useReducer, useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
@@ -18,14 +18,13 @@ const emailReducer = (state, action) => {
 
 const passReducer = (state, action) => {
   if (action.type === "USER_INPUT") {
-    return { value: action.val, isValid: action.val.trim().length > 6};
+    return { value: action.val, isValid: action.val.trim().length > 6 };
   }
 
   if (action.type === "USER_BLUR") {
     return { value: state.value, isValid: state.value.trim().length > 6 };
   }
   return { value: "", isValid: false };
-
 };
 
 const Login = (props) => {
@@ -42,54 +41,58 @@ const Login = (props) => {
     isValid: null,
   });
 
-  const [passState, dispatchPass] = useReducer(passReducer, { 
+  const [passState, dispatchPass] = useReducer(passReducer, {
     value: "",
     isValid: null,
   });
 
-  // useEffect(() => {
-  //   const Identifier = setTimeout(() => {
-  //     console.log('checking-Validity');
-  //     setFormIsValid(
-  //       enteredEmail.includes("@") &&
-  //         enteredPassword.trim().length > 6 &&
-  //         enteredCollege.trim().length > 5
-  //     );
-  //   }, 500)
+  // here we are optimizing code so that dependecies only change if input is valid or not 
 
-  //   return () => {
-  //     console.log("cleanup-function");
-  //     clearTimeout(Identifier);
-  //   }
+  const { isValid: emailIsValid } = emailState;
+  const {isValid : passwordIsValid} = passState
+// the above is destructring of object and we want isValid property of emailState object
+  useEffect(() => {
+    const Identifier = setTimeout(() => {
+      console.log("checking-Validity");
+      setFormIsValid(
+        emailIsValid &&
+          passwordIsValid &&
+          enteredCollege.trim().length > 5
+      );
+    }, 500);
 
-  // }, [enteredEmail, enteredPassword, enteredCollege]);
+    return () => {
+      console.log("cleanup-function");
+      clearTimeout(Identifier);
+    };
+  }, [emailIsValid, passwordIsValid, enteredCollege]);
 
   const emailChangeHandler = (event) => {
     dispatchEmail({ type: "USER_INPUT", val: event.target.value });
 
-    setFormIsValid(
-      event.target.value.includes("@") &&
-        passState.isValid &&
-        enteredCollege.trim.length > 6
-    );
+    // setFormIsValid(
+    //   event.target.value.includes("@") &&
+    //     passState.isValid &&
+    //     enteredCollege.trim.length > 6
+    // );
   };
 
   const passwordChangeHandler = (event) => {
     // setEnteredPassword(event.target.value);
-    console.log(event.target.value);
+    // console.log(event.target.value);
     dispatchPass({ type: "USER_INPUT", val: event.target.value });
 
-    setFormIsValid(event.target.value.trim().length > 6 && emailState.isValid);
+    // setFormIsValid(event.target.value.trim().length > 6 && emailState.isValid);
   };
 
   const collegeChangeHandler = (event) => {
     setEnteredCollege(event.target.value);
 
-    setFormIsValid(
-      event.target.value.trim().length > 5 &&
-        emailState.value.includes("@") &&
-        passState.isValid
-    );
+    // setFormIsValid(
+    //   event.target.value.trim().length > 5 &&
+    //     emailState.value.includes("@") &&
+    //     passState.isValid
+    // );
   };
 
   const validateEmailHandler = () => {
@@ -108,8 +111,7 @@ const Login = (props) => {
   const submitHandler = (event) => {
     event.preventDefault();
     console.log(emailState.value, passState.value, enteredCollege);
-    props.onLogin(emailState.value, enteredCollege,
-      passState.value);
+    props.onLogin(emailState.value, enteredCollege, passState.value);
   };
 
   return (
